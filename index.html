@@ -87,11 +87,13 @@
 
         /* Título Principal Ajustado para ficar na barra superior */
         h1 {
+            position: absolute;
+            left: 0;
+            right: 0;
             text-align: center;
-            font-size: 1.0em; 
-            margin: 0 15px; /* Substitui margin-top/bottom por margem lateral para não empurrar a barra */
-            flex-grow: 1; /* Faz o título ocupar todo o espaço central disponível */
-            pointer-events: none;
+            font-size: 1.0em;
+            margin-top: 2px;
+            pointer-events: none; /* Garante que a "caixa" do título não bloqueie o clique nos botões laterais */
         }
 
         #loading {
