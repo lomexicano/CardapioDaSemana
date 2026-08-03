@@ -5,56 +5,110 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meu Cardápio RU - UFSM</title>
     <style>
+        /* Variáveis de cores para o Tema Escuro (Padrão) */
+        :root {
+            --bg-color: #121212;
+            --text-color: #e0e0e0;
+            --card-bg: #1e1e1e;
+            --card-shadow: rgba(0,0,0,0.5);
+            --border-color: #333;
+            --day-border: #3498db;
+            --meal-title-color: #f39c12;
+            --btn-bg: #333;
+            --btn-color: #e0e0e0;
+        }
+
+        /* Variáveis de cores para o Tema Claro */
+        body.light-mode {
+            --bg-color: #f4f7f6;
+            --text-color: #333;
+            --card-bg: white;
+            --card-shadow: rgba(0,0,0,0.1);
+            --border-color: #ecf0f1;
+            --day-border: #3498db;
+            --meal-title-color: #e67e22;
+            --btn-bg: #ddd;
+            --btn-color: #333;
+        }
+
         /* Estilos visuais */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
-            color: #333;
-            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 10px; /* Margem da página reduzida */
             margin: 0;
+            transition: background-color 0.3s, color 0.3s;
         }
+
+        /* Botão de Tema */
+        #theme-toggle {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: var(--btn-bg);
+            color: var(--btn-color);
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: 0.3s;
+        }
+
+        /* Título Principal Compacto */
         h1 {
             text-align: center;
-            color: #2c3e50;
+            font-size: 1.2em; /* Fonte reduzida */
+            margin-top: 5px;  /* Bem próximo ao topo */
+            margin-bottom: 10px; /* Margem menor para os cards */
         }
+
         #loading {
             text-align: center;
-            font-size: 1.2em;
+            font-size: 1em;
             color: #7f8c8d;
         }
         
-        /* Uso de CSS Grid para forçar 6 colunas na tela cheia */
+        /* 6 colunas */
         .container {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
             gap: 15px;
-            margin-top: 20px;
+            margin-top: 5px; /* Reduzido para aproximar do título */
             width: 100%;
             box-sizing: border-box;
         }
         
         .card {
-            background: white;
+            background: var(--card-bg);
             border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            padding: 15px;
+            box-shadow: 0 4px 8px var(--card-shadow);
+            padding: 10px 15px; /* Padding interno um pouco menor */
             box-sizing: border-box;
+            transition: background-color 0.3s;
         }
+
+        /* Dias da semana com fonte reduzida */
         .day-title {
             font-weight: bold;
-            font-size: 1.1em;
+            font-size: 0.55em; /* Reduzido em aproximadamente 50% */
             text-align: center;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 10px;
+            border-bottom: 2px solid var(--day-border);
+            padding-bottom: 5px;
             margin-bottom: 10px;
-            text-transform: capitalize;
+            text-transform: uppercase; /* Deixei maiúsculo para ajudar na leitura devido ao tamanho pequeno */
         }
+
+        /* Títulos das Refeições centralizados */
         .meal-title {
-            color: #e67e22;
+            color: var(--meal-title-color);
             font-weight: bold;
-            margin-top: 15px;
+            margin-top: 10px;
             font-size: 1em;
+            text-align: center; /* Centralizado conforme solicitado */
         }
+
         ul {
             list-style-type: none;
             padding: 0;
@@ -63,29 +117,46 @@
         li {
             font-size: 0.85em;
             padding: 5px 0;
-            border-bottom: 1px solid #ecf0f1;
+            border-bottom: 1px solid var(--border-color);
         }
         li:last-child {
             border-bottom: none;
         }
         .error { color: #e74c3c; font-weight: bold; }
 
-        /* Regras de responsividade para telas menores (notebooks e celulares) */
+        /* Responsividade */
         @media (max-width: 1400px) {
             .container { grid-template-columns: repeat(3, 1fr); }
         }
         @media (max-width: 768px) {
             .container { grid-template-columns: 1fr; }
+            #theme-toggle {
+                position: static; /* No celular, o botão fica normal no fluxo */
+                display: block;
+                margin: 0 auto 10px auto;
+            }
         }
     </style>
 </head>
 <body>
 
+    <button id="theme-toggle">☀️ Modo Claro</button>
     <h1>Cardápio RU UFSM (Semana Atual)</h1>
     <div id="loading">Buscando cardápios nos servidores da UFSM...</div>
     <div class="container" id="menu-container"></div>
 
     <script>
+        // Lógica de alternância do tema
+        const themeBtn = document.getElementById('theme-toggle');
+        themeBtn.addEventListener('click', () => {
+            document.body.classList.toggle('light-mode');
+            if (document.body.classList.contains('light-mode')) {
+                themeBtn.textContent = '🌙 Modo Escuro';
+            } else {
+                themeBtn.textContent = '☀️ Modo Claro';
+            }
+        });
+
         async function loadMenus() {
             const container = document.getElementById('menu-container');
             const loading = document.getElementById('loading');
@@ -105,7 +176,6 @@
             const url1 = `https://portal.ufsm.br/ru/publico/buscarCardapio.json?inicio=${inicio}&fim=${fim}&idRestaurante=1&tiposRefeicao%5B%5D=1&tiposRefeicao%5B%5D=2&tiposRefeicao%5B%5D=3`;
 
             try {
-                // Requisição direta, sem proxy
                 const [res41, res1] = await Promise.all([
                     fetch(url41),
                     fetch(url1)
@@ -123,7 +193,6 @@
                     mealList.forEach(item => {
                         const dateObj = new Date(item.start);
                         
-                        // Cria uma chave YYYY-MM-DD para garantir a ordenação cronológica
                         const yyyy = dateObj.getFullYear();
                         const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
                         const dd = String(dateObj.getDate()).padStart(2, '0');
@@ -140,7 +209,14 @@
                             };
                         }
 
-                        const pratos = item.object.preparos.map(p => p.nomePreparo);
+                        // Aplica o filtro da palavra "TEMPEROS"
+                        const pratos = item.object.preparos.map(p => {
+                            if (p.nomePreparo.toUpperCase().startsWith('TEMPEROS')) {
+                                return "TEMPEROS: de sempre";
+                            }
+                            return p.nomePreparo;
+                        });
+                        
                         menusByDay[sortKey][tipo] = pratos;
                     });
                 };
@@ -150,7 +226,6 @@
 
                 loading.style.display = 'none';
 
-                // Pega as chaves (datas), ordena cronologicamente e renderiza
                 const sortedDates = Object.keys(menusByDay).sort();
 
                 for (const date of sortedDates) {
