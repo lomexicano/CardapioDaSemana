@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cardápio da semana do RU - UFSM</title>
+    <title>Meu Cardápio RU - UFSM</title>
+    
+    <!-- Ícone SVG -->
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
+
     <style>
         /* Variáveis de cores para o Tema Escuro (Padrão) */
         :root {
@@ -42,11 +45,35 @@
             transition: background-color 0.3s, color 0.3s;
         }
 
+        /* Barra Superior (Seletores e Botão de Tema) */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 5px; /* Substitui o "top: 5px" */
+            margin-bottom: 5px;
+        }
+
+        /* Seletores de RU */
+        .ru-selectors {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .ru-selectors select {
+            background: var(--btn-bg);
+            color: var(--btn-color);
+            border: none;
+            padding: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
         /* Botão de Tema */
         #theme-toggle {
-            position: absolute;
-            top: 5px;
-            right: 15px;
             background: var(--btn-bg);
             color: var(--btn-color);
             border: none;
@@ -57,7 +84,7 @@
             transition: 0.3s;
         }
 
-        /* Título Principal Compacto */
+        /* Título Principal Ajustado */
         h1 {
             text-align: center;
             font-size: 1.0em; 
@@ -92,6 +119,14 @@
             flex-direction: column;
         }
 
+        .current-day {
+            background-color: #2a2a2a;
+            border: 2px solid var(--meal-title-color);
+        }
+        body.light-mode .current-day {
+            background-color: #fff3cd;
+        }
+
         /* Divide o espaço restante do card exatamente em duas metades (50% almoço, 50% jantar) */
         .meals-wrapper {
             display: grid;
@@ -105,7 +140,7 @@
             flex-direction: column;
         }
 
-        /* Dias da semana com fonte reduzida */
+        /* Dias da semana */
         .day-title {
             font-weight: bold;
             font-size: 0.55em; 
@@ -116,7 +151,7 @@
             text-transform: uppercase; 
         }
 
-        /* Títulos das Refeições centralizados */
+        /* Títulos das Refeições Ajustados */
         .meal-title {
             color: var(--meal-title-color);
             font-weight: bold;
@@ -130,6 +165,7 @@
             padding: 0;
             margin: 0;
         }
+        /* Tamanho de fonte reduzido para os itens da lista */
         li {
             font-size: 0.75em;
             padding: 5px 0;
@@ -140,14 +176,6 @@
         }
         .error { color: #e74c3c; font-weight: bold; }
 
-        .current-day {
-            background-color: #2a2a2a;
-            border: 2px solid var(--meal-title-color);
-        }
-        body.light-mode .current-day {
-            background-color: #fff3cd;
-        }
-        
         /* Responsividade */
         @media (max-width: 1400px) {
             .container { grid-template-columns: repeat(3, 1fr); }
@@ -155,12 +183,11 @@
         
         @media (max-width: 768px) {
             .container { grid-template-columns: 1fr; }
-            #theme-toggle {
-                position: static; 
-                display: block;
-                margin: 0 auto 10px auto;
+            .top-bar {
+                flex-direction: column;
+                gap: 10px;
+                padding-top: 10px;
             }
-            /* No celular, desabilita a divisão 50/50 para não gerar espaços vazios gigantes */
             .meals-wrapper {
                 grid-template-rows: auto auto; 
             }
@@ -169,30 +196,91 @@
 </head>
 <body>
 
-    <button id="theme-toggle">☀️ Modo Claro</button>
-    <h1>Cardápio do RU da UFSM (semana atual, almoço no I e jantar no II)</h1>
+    <div class="top-bar">
+        <div class="ru-selectors">
+            <label>Almoço:
+                <select id="select-almoco">
+                    <option value="1">RU I</option>
+                    <option value="41" selected>RU II</option>
+                </select>
+            </label>
+            <label>Jantar:
+                <select id="select-jantar">
+                    <option value="1" selected>RU I</option>
+                    <option value="41">RU II</option>
+                </select>
+            </label>
+        </div>
+        <button id="theme-toggle">☀️ Modo Claro</button>
+    </div>
+
+    <h1 id="main-title">Cardápio do RU da UFSM</h1>
+    
     <div id="loading">Buscando cardápios nos servidores da UFSM...</div>
     <div class="container" id="menu-container"></div>
 
     <script>
-        // Lógica de alternância do tema
+        // --- 1. CONFIGURAÇÕES DE TEMA ---
         const themeBtn = document.getElementById('theme-toggle');
+        
+        // Verifica se há um tema salvo no localStorage
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light-mode');
+            themeBtn.textContent = '🌙 Modo Escuro';
+        }
+
         themeBtn.addEventListener('click', () => {
             document.body.classList.toggle('light-mode');
             if (document.body.classList.contains('light-mode')) {
                 themeBtn.textContent = '🌙 Modo Escuro';
+                localStorage.setItem('theme', 'light');
             } else {
                 themeBtn.textContent = '☀️ Modo Claro';
+                localStorage.setItem('theme', 'dark');
             }
         });
 
+        // --- 2. CONFIGURAÇÕES DOS SELETORES DE RU ---
+        const selectAlmoco = document.getElementById('select-almoco');
+        const selectJantar = document.getElementById('select-jantar');
+        const mainTitle = document.getElementById('main-title');
+
+        // Carrega opções salvas no localStorage (se existirem)
+        if (localStorage.getItem('ruAlmoco')) selectAlmoco.value = localStorage.getItem('ruAlmoco');
+        if (localStorage.getItem('ruJantar')) selectJantar.value = localStorage.getItem('ruJantar');
+
+        // Atualiza Título Dinâmico
+        function updateTitle() {
+            const getRoman = (val) => val === '1' ? 'I' : 'II';
+            mainTitle.textContent = `Cardápio do RU da UFSM (semana atual, almoço no ${getRoman(selectAlmoco.value)} e jantar no ${getRoman(selectJantar.value)})`;
+        }
+        
+        updateTitle();
+
+        // Escuta as mudanças, salva as escolhas e recarrega a página
+        selectAlmoco.addEventListener('change', () => {
+            localStorage.setItem('ruAlmoco', selectAlmoco.value);
+            updateTitle();
+            loadMenus();
+        });
+
+        selectJantar.addEventListener('change', () => {
+            localStorage.setItem('ruJantar', selectJantar.value);
+            updateTitle();
+            loadMenus();
+        });
+
+
+        // --- 3. LÓGICA DE BUSCA DO CARDÁPIO ---
         async function loadMenus() {
             const container = document.getElementById('menu-container');
             const loading = document.getElementById('loading');
 
+            // Limpa o cardápio antigo ao recarregar
+            container.innerHTML = '';
+            loading.style.display = 'block';
+
             const now = new Date();
-            const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-            
             const firstDay = new Date(now.setDate(now.getDate() - now.getDay())); 
             firstDay.setHours(0, 0, 0, 0);
             
@@ -200,23 +288,36 @@
             lastDay.setDate(lastDay.getDate() + 6); 
             lastDay.setHours(23, 59, 59, 999);
 
+            // Obtém exatamente o dia de HOJE para a classe current-day
+            const todayNow = new Date();
+            const todayStr = `${todayNow.getFullYear()}-${String(todayNow.getMonth() + 1).padStart(2, '0')}-${String(todayNow.getDate()).padStart(2, '0')}`;
+
             const inicio = Math.floor(firstDay.getTime() / 1000);
             const fim = Math.floor(lastDay.getTime() / 1000);
 
-            const url41 = `https://portal.ufsm.br/ru/publico/buscarCardapio.json?inicio=${inicio}&fim=${fim}&idRestaurante=41&tiposRefeicao%5B%5D=1&tiposRefeicao%5B%5D=2&tiposRefeicao%5B%5D=3`;
-            const url1 = `https://portal.ufsm.br/ru/publico/buscarCardapio.json?inicio=${inicio}&fim=${fim}&idRestaurante=1&tiposRefeicao%5B%5D=1&tiposRefeicao%5B%5D=2&tiposRefeicao%5B%5D=3`;
+            const idA = selectAlmoco.value;
+            const idJ = selectJantar.value;
+
+            const urlA = `https://portal.ufsm.br/ru/publico/buscarCardapio.json?inicio=${inicio}&fim=${fim}&idRestaurante=${idA}&tiposRefeicao%5B%5D=1&tiposRefeicao%5B%5D=2&tiposRefeicao%5B%5D=3`;
+            const urlJ = `https://portal.ufsm.br/ru/publico/buscarCardapio.json?inicio=${inicio}&fim=${fim}&idRestaurante=${idJ}&tiposRefeicao%5B%5D=1&tiposRefeicao%5B%5D=2&tiposRefeicao%5B%5D=3`;
 
             try {
-                const [res41, res1] = await Promise.all([
-                    fetch(url41),
-                    fetch(url1)
-                ]);
+                let dataA, dataJ;
 
-                const data41 = await res41.json();
-                const data1 = await res1.json();
+                // Otimização: se escolheu o mesmo RU para as duas refeições, faz uma requisição só
+                if (idA === idJ) {
+                    const res = await fetch(urlA);
+                    const data = await res.json();
+                    dataA = data;
+                    dataJ = data;
+                } else {
+                    const [resA, resJ] = await Promise.all([ fetch(urlA), fetch(urlJ) ]);
+                    dataA = await resA.json();
+                    dataJ = await resJ.json();
+                }
 
-                const almocoItems = data41.filter(item => item.title === "Almoço");
-                const jantarItems = data1.filter(item => item.title === "Jantar");
+                const almocoItems = dataA.filter(item => item.title === "Almoço");
+                const jantarItems = dataJ.filter(item => item.title === "Jantar");
 
                 const menusByDay = {};
 
@@ -240,7 +341,6 @@
                             };
                         }
 
-                        // Remove os temperos e aplica negrito se for de origem animal
                         const pratos = item.object.preparos
                             .filter(p => !p.nomePreparo.toUpperCase().startsWith('TEMPEROS'))
                             .map(p => p.isOrigemAnimal ? `<strong>${p.nomePreparo}</strong>` : p.nomePreparo);
@@ -262,25 +362,23 @@
                     if (meals.almoco.length === 0 && meals.jantar.length === 0) continue;
 
                     const card = document.createElement('div');
-                    if (date === todayStr) {
-                        card.className = 'card current-day';
-                    } else {
-                        card.className = 'card';
-                    }
+                    // Aplica classe de destaque se a data for igual ao dia de hoje
+                    card.className = date === todayStr ? 'card current-day' : 'card';
 
                     let html = `<div class="day-title">${meals.displayTitle}</div>`;
-
-                    // Envelopa as duas refeições para forçar 50% do espaço para cada
                     html += `<div class="meals-wrapper">`;
                     
+                    // Nomes dinâmicos para as refeições
+                    const nameA = idA === '1' ? 'RU I' : 'RU II';
+                    const nameJ = idJ === '1' ? 'RU I' : 'RU II';
+
                     // --- Seção Almoço ---
                     html += `<div class="meal-section">`;
                     if (meals.almoco.length > 0) {
-                        html += `<div class="meal-title">☀️ Almoço (RU II)</div><ul>`;
+                        html += `<div class="meal-title">☀️ Almoço (${nameA})</div><ul>`;
                         meals.almoco.forEach(prato => html += `<li>${prato}</li>`);
                         html += `</ul>`;
                     } else {
-                        // Mantém a estrutura caso não haja almoço no dia, para não quebrar o layout
                         html += `<div class="meal-title" style="color: #7f8c8d;">☀️ Almoço (sem serviço)</div>`;
                     }
                     html += `</div>`;
@@ -288,7 +386,7 @@
                     // --- Seção Jantar ---
                     html += `<div class="meal-section">`;
                     if (meals.jantar.length > 0) {
-                        html += `<div class="meal-title">🌙 Jantar (RU I)</div><ul>`;
+                        html += `<div class="meal-title">🌙 Jantar (${nameJ})</div><ul>`;
                         meals.jantar.forEach(prato => html += `<li>${prato}</li>`);
                         html += `</ul>`;
                     } else {
@@ -296,7 +394,7 @@
                     }
                     html += `</div>`;
 
-                    html += `</div>`; // Fim meals-wrapper
+                    html += `</div>`; 
 
                     card.innerHTML = html;
                     container.appendChild(card);
