@@ -87,6 +87,12 @@
             padding: 10px 15px; /* Padding interno um pouco menor */
             box-sizing: border-box;
             transition: background-color 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .empurrar-jantar {
+            flex-grow: 1;
         }
 
         /* Dias da semana com fonte reduzida */
@@ -140,8 +146,8 @@
 </head>
 <body>
 
-    <button id="theme-toggle">☀️ Modo Claro</button>
-    <h1>Cardápio RU UFSM (Semana Atual)</h1>
+    <button id="theme-toggle">☀️ Mudar para o Modo Claro</button>
+    <h1>Cardápio RU UFSM (semana atual)</h1>
     <div id="loading">Buscando cardápios nos servidores da UFSM...</div>
     <div class="container" id="menu-container"></div>
 
@@ -151,9 +157,9 @@
         themeBtn.addEventListener('click', () => {
             document.body.classList.toggle('light-mode');
             if (document.body.classList.contains('light-mode')) {
-                themeBtn.textContent = '🌙 Modo Escuro';
+                themeBtn.textContent = '🌙 Mudar para o Modo Escuro';
             } else {
-                themeBtn.textContent = '☀️ Modo Claro';
+                themeBtn.textContent = '☀️ Mudar para o Modo Claro';
             }
         });
 
@@ -209,13 +215,11 @@
                             };
                         }
 
-                        // Aplica o filtro da palavra "TEMPEROS"
-                        const pratos = item.object.preparos.map(p => {
-                            if (p.nomePreparo.toUpperCase().startsWith('TEMPEROS')) {
-                                return "TEMPEROS: de sempre";
-                            }
-                            return p.nomePreparo;
-                        });
+                        // Remover o item de temperos, que nunca muda e é irrelevante
+                        // Deixar os pratos de origem animal em negrito (strong)
+                        const pratos = item.object.preparos
+                            .filter(p => !p.nomePreparo.toUpperCase().startsWith('TEMPEROS'))
+                            .map(p => p.isOrigemAnimal ? `<strong>${p.nomePreparo}</strong>` : p.nomePreparo);
                         
                         menusByDay[sortKey][tipo] = pratos;
                     });
@@ -237,6 +241,21 @@
                     card.className = 'card';
 
                     let html = `<div class="day-title">${meals.displayTitle}</div>`;
+
+                    // Esta div vai ocupar todo o espaço vazio disponível, empurrando o jantar
+                    html += `<div class="empurrar-jantar">`;
+                    if (meals.almoco.length > 0) {
+                        html += `<div class="meal-title">☀️ Almoço (RU II)</div><ul>`;
+                        meals.almoco.forEach(prato => html += `<li>${prato}</li>`);
+                        html += `</ul>`;
+                    }
+                    html += `</div>`; // Fecha a div empurrar-jantar
+                    
+                    if (meals.jantar.length > 0) {
+                        html += `<div class="meal-title">🌙 Jantar (RU I)</div><ul>`;
+                        meals.jantar.forEach(prato => html += `<li>${prato}</li>`);
+                        html += `</ul>`;
+                    }
 
                     if (meals.almoco.length > 0) {
                         html += `<div class="meal-title">☀️ Almoço (RU II)</div><ul>`;
