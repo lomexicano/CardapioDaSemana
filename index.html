@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Cardápio RU - UFSM</title>
+    <style>
+        /* Estilos visuais simples para a página */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            padding: 20px;
+            margin: 0;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        #loading {
+            text-align: center;
+            font-size: 1.2em;
+            color: #7f8c8d;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 20px;
+            width: 320px;
+        }
+        .day-title {
+            font-weight: bold;
+            font-size: 1.2em;
+            text-align: center;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            text-transform: capitalize;
+        }
+        .meal-title {
+            color: #e67e22;
+            font-weight: bold;
+            margin-top: 15px;
+            font-size: 1.1em;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            font-size: 0.9em;
+            padding: 5px 0;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        li:last-child {
+            border-bottom: none;
+        }
+        .error { color: #e74c3c; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>Cardápio RU UFSM (Semana Atual)</h1>
+    <div id="loading">Buscando cardápios nos servidores da UFSM...</div>
+    <div class="container" id="menu-container"></div>
+
+    <script>
+        async function loadMenus() {
+            const container = document.getElementById('menu-container');
+            const loading = document.getElementById('loading');
+
+            // 1. Calcular a data de Início (Domingo) e Fim (Sábado) da semana atual
+            const now = new Date();
+            const firstDay = new Date(now.setDate(now.getDate() - now.getDay())); // Volta para Domingo
+            firstDay.setHours(0, 0, 0, 0);
+            
+            const lastDay = new Date(firstDay);
+            lastDay.setDate(lastDay.getDate() + 6); // Avança para Sábado
+            lastDay.setHours(23, 59, 59, 999);
+
+            // A API da UFSM usa o formato UNIX Timestamp em segundos
+            const inicio = Math.floor(firstDay.getTime() / 1000);
+            const fim = Math.floor(lastDay.getTime() / 1000);
+
+            // 2. Montar as URLs com os parâmetros dinâmicos
+            const url41 = `https://portal.ufsm.br/ru/publico/buscarCardapio.json?inicio=${inicio}&fim=${fim}&idRestaurante=41&tiposRefeicao%5B%5D=1&tiposRefeicao%5B%5D=2&tiposRefeicao%5B%5D=3`;
+            const url1 = `https://portal.ufsm.br/ru/publico/buscarCardapio.json?inicio=${inicio}&fim=${fim}&idRestaurante=1&tiposRefeicao%5B%5D=1&tiposRefeicao%5B%5D=2&tiposRefeicao%5B%5D=3`;
+
+            // Utilizamos um proxy CORS público para evitar bloqueios do navegador
+            const proxy = 'https://corsproxy.io/?';
+
+            try {
+                // 3. Fazer as duas requisições HTTP ao mesmo tempo
+                const [res41, res1] = await Promise.all([
+                    fetch(proxy + encodeURIComponent(url41)),
+                    fetch(proxy + encodeURIComponent(url1))
+                ]);
+
+                const data41 = await res41.json();
+                const data1 = await res1.json();
+
+                // 4. Filtrar: RU 41 para Almoço, e RU 1 para Jantar
+                const almocoItems = data41.filter(item => item.title === "Almoço");
+                const jantarItems = data1.filter(item => item.title === "Jantar");
+
+                // 5. Agrupar os dados por dia da semana para facilitar a exibição
+                const menusByDay = {};
+
+                const processMeal = (mealList, tipo) => {
+                    mealList.forEach(item => {
+                        const dateObj = new Date(item.start);
+                        const dayName = dateObj.toLocaleDateString('pt-BR', { weekday: 'long' });
+                        const dateString = dateObj.toLocaleDateString('pt-BR');
+                        const key = `${dayName} (${dateString})`;
+
+                        if (!menusByDay[key]) {
+                            menusByDay[key] = { almoco: [], jantar: [] };
+                        }
+
+                        // Extrai apenas os nomes dos preparos (comida)
+                        const pratos = item.object.preparos.map(p => p.nomePreparo);
+                        menusByDay[key][tipo] = pratos;
+                    });
+                };
+
+                processMeal(almocoItems, 'almoco');
+                processMeal(jantarItems, 'jantar');
+
+                // Esconde a mensagem de carregamento
+                loading.style.display = 'none';
+
+                // 6. Criar os cards na tela para cada dia
+                for (const [day, meals] of Object.entries(menusByDay)) {
+                    // Ignora dias sem nenhum cardápio registrado
+                    if (meals.almoco.length === 0 && meals.jantar.length === 0) continue;
+
+                    const card = document.createElement('div');
+                    card.className = 'card';
+
+                    let html = `<div class="day-title">${day}</div>`;
+
+                    if (meals.almoco.length > 0) {
+                        html += `<div class="meal-title">☀️ Almoço (RU 41)</div><ul>`;
+                        meals.almoco.forEach(prato => html += `<li>${prato}</li>`);
+                        html += `</ul>`;
+                    }
+
+                    if (meals.jantar.length > 0) {
+                        html += `<div class="meal-title">🌙 Jantar (RU 1)</div><ul>`;
+                        meals.jantar.forEach(prato => html += `<li>${prato}</li>`);
+                        html += `</ul>`;
+                    }
+
+                    card.innerHTML = html;
+                    container.appendChild(card);
+                }
+
+            } catch (error) {
+                loading.innerHTML = `<span class="error">Erro ao carregar o cardápio. Os servidores da UFSM podem estar em manutenção.</span>`;
+                console.error("Detalhes do erro:", error);
+            }
+        }
+
+        // Inicia o processo quando a página é aberta
+        loadMenus();
+    </script>
+</body>
+</html>
