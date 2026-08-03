@@ -36,7 +36,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
-            padding: 10px; /* Margem da página reduzida */
+            padding: 10px; 
             margin: 0;
             transition: background-color 0.3s, color 0.3s;
         }
@@ -59,9 +59,9 @@
         /* Título Principal Compacto */
         h1 {
             text-align: center;
-            font-size: 1.2em; /* Fonte reduzida */
-            margin-top: 5px;  /* Bem próximo ao topo */
-            margin-bottom: 10px; /* Margem menor para os cards */
+            font-size: 1.2em; 
+            margin-top: 5px;  
+            margin-bottom: 10px; 
         }
 
         #loading {
@@ -75,7 +75,7 @@
             display: grid;
             grid-template-columns: repeat(6, 1fr);
             gap: 15px;
-            margin-top: 5px; /* Reduzido para aproximar do título */
+            margin-top: 5px; 
             width: 100%;
             box-sizing: border-box;
         }
@@ -84,13 +84,16 @@
             background: var(--card-bg);
             border-radius: 10px;
             box-shadow: 0 4px 8px var(--card-shadow);
-            padding: 10px 15px; /* Padding interno um pouco menor */
+            padding: 10px 15px; 
             box-sizing: border-box;
             transition: background-color 0.3s;
+            
+            /* Transformando o card em flexbox para alinhar os elementos internamente */
             display: flex;
             flex-direction: column;
         }
 
+        /* Essa classe vai ocupar todo o espaço restante, empurrando o jantar para a base do card */
         .empurrar-jantar {
             flex-grow: 1;
         }
@@ -98,12 +101,12 @@
         /* Dias da semana com fonte reduzida */
         .day-title {
             font-weight: bold;
-            font-size: 0.55em; /* Reduzido em aproximadamente 50% */
+            font-size: 0.55em; 
             text-align: center;
             border-bottom: 2px solid var(--day-border);
             padding-bottom: 5px;
             margin-bottom: 10px;
-            text-transform: uppercase; /* Deixei maiúsculo para ajudar na leitura devido ao tamanho pequeno */
+            text-transform: uppercase; 
         }
 
         /* Títulos das Refeições centralizados */
@@ -112,7 +115,7 @@
             font-weight: bold;
             margin-top: 10px;
             font-size: 1em;
-            text-align: center; /* Centralizado conforme solicitado */
+            text-align: center; 
         }
 
         ul {
@@ -137,7 +140,7 @@
         @media (max-width: 768px) {
             .container { grid-template-columns: 1fr; }
             #theme-toggle {
-                position: static; /* No celular, o botão fica normal no fluxo */
+                position: static; 
                 display: block;
                 margin: 0 auto 10px auto;
             }
@@ -146,8 +149,8 @@
 </head>
 <body>
 
-    <button id="theme-toggle">☀️ Mudar para o Modo Claro</button>
-    <h1>Cardápio RU UFSM (semana atual)</h1>
+    <button id="theme-toggle">☀️ Modo Claro</button>
+    <h1>Cardápio RU UFSM (Semana Atual)</h1>
     <div id="loading">Buscando cardápios nos servidores da UFSM...</div>
     <div class="container" id="menu-container"></div>
 
@@ -157,9 +160,9 @@
         themeBtn.addEventListener('click', () => {
             document.body.classList.toggle('light-mode');
             if (document.body.classList.contains('light-mode')) {
-                themeBtn.textContent = '🌙 Mudar para o Modo Escuro';
+                themeBtn.textContent = '🌙 Modo Escuro';
             } else {
-                themeBtn.textContent = '☀️ Mudar para o Modo Claro';
+                themeBtn.textContent = '☀️ Modo Claro';
             }
         });
 
@@ -215,8 +218,7 @@
                             };
                         }
 
-                        // Remover o item de temperos, que nunca muda e é irrelevante
-                        // Deixar os pratos de origem animal em negrito (strong)
+                        // Remove os temperos e aplica negrito se for de origem animal
                         const pratos = item.object.preparos
                             .filter(p => !p.nomePreparo.toUpperCase().startsWith('TEMPEROS'))
                             .map(p => p.isOrigemAnimal ? `<strong>${p.nomePreparo}</strong>` : p.nomePreparo);
@@ -242,27 +244,19 @@
 
                     let html = `<div class="day-title">${meals.displayTitle}</div>`;
 
-                    // Esta div vai ocupar todo o espaço vazio disponível, empurrando o jantar
+                    // Abre a div que empurra o jantar para baixo
                     html += `<div class="empurrar-jantar">`;
-                    if (meals.almoco.length > 0) {
-                        html += `<div class="meal-title">☀️ Almoço (RU II)</div><ul>`;
-                        meals.almoco.forEach(prato => html += `<li>${prato}</li>`);
-                        html += `</ul>`;
-                    }
-                    html += `</div>`; // Fecha a div empurrar-jantar
                     
-                    if (meals.jantar.length > 0) {
-                        html += `<div class="meal-title">🌙 Jantar (RU I)</div><ul>`;
-                        meals.jantar.forEach(prato => html += `<li>${prato}</li>`);
-                        html += `</ul>`;
-                    }
-
                     if (meals.almoco.length > 0) {
                         html += `<div class="meal-title">☀️ Almoço (RU II)</div><ul>`;
                         meals.almoco.forEach(prato => html += `<li>${prato}</li>`);
                         html += `</ul>`;
                     }
+                    
+                    // Fecha a div que empurra o jantar
+                    html += `</div>`;
 
+                    // Renderiza o jantar no espaço restante no final do card
                     if (meals.jantar.length > 0) {
                         html += `<div class="meal-title">🌙 Jantar (RU I)</div><ul>`;
                         meals.jantar.forEach(prato => html += `<li>${prato}</li>`);
