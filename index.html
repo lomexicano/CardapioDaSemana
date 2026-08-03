@@ -47,6 +47,7 @@
 
         /* Barra Superior - Flexbox garante o alinhamento na mesma linha */
         .top-bar {
+            position: relative;
             display: flex;
             justify-content: space-between;
             align-items: center; /* Alinha todos os itens verticalmente ao centro */
@@ -90,6 +91,7 @@
             font-size: 1.0em; 
             margin: 0 15px; /* Substitui margin-top/bottom por margem lateral para não empurrar a barra */
             flex-grow: 1; /* Faz o título ocupar todo o espaço central disponível */
+            pointer-events: none;
         }
 
         #loading {
@@ -191,6 +193,9 @@
             }
             .meals-wrapper {
                 grid-template-rows: auto auto; 
+            }
+            h1 {
+                position: static;
             }
         }
     </style>
