@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meu Cardápio RU - UFSM</title>
+    <title>Cardápio da semana do RU - UFSM</title>
     <style>
         /* Variáveis de cores para o Tema Escuro (Padrão) */
         :root {
@@ -139,6 +139,14 @@
         }
         .error { color: #e74c3c; font-weight: bold; }
 
+        .current-day {
+            background-color: #2a2a2a;
+            border: 2px solid var(--meal-title-color);
+        }
+        body.light-mode .current-day {
+            background-color: #fff3cd;
+        }
+        
         /* Responsividade */
         @media (max-width: 1400px) {
             .container { grid-template-columns: repeat(3, 1fr); }
@@ -161,7 +169,7 @@
 <body>
 
     <button id="theme-toggle">☀️ Modo Claro</button>
-    <h1>Cardápio RU UFSM (semana atual)</h1>
+    <h1>Cardápio do RU da UFSM (semana atual, almoço no I e jantar no II)</h1>
     <div id="loading">Buscando cardápios nos servidores da UFSM...</div>
     <div class="container" id="menu-container"></div>
 
@@ -182,6 +190,8 @@
             const loading = document.getElementById('loading');
 
             const now = new Date();
+            const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            
             const firstDay = new Date(now.setDate(now.getDate() - now.getDay())); 
             firstDay.setHours(0, 0, 0, 0);
             
@@ -251,7 +261,11 @@
                     if (meals.almoco.length === 0 && meals.jantar.length === 0) continue;
 
                     const card = document.createElement('div');
-                    card.className = 'card';
+                    if (date === todayStr) {
+                        card.className = 'card current-day';
+                    } else {
+                        card.className = 'card';
+                    }
 
                     let html = `<div class="day-title">${meals.displayTitle}</div>`;
 
