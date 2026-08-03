@@ -99,9 +99,13 @@
 
             try {
                 // 3. Fazer as duas requisições HTTP ao mesmo tempo
+                // const [res41, res1] = await Promise.all([
+                //     fetch(proxy + encodeURIComponent(url41)),
+                //     fetch(proxy + encodeURIComponent(url1))
+                // ]);
                 const [res41, res1] = await Promise.all([
-                    fetch(proxy + encodeURIComponent(url41)),
-                    fetch(proxy + encodeURIComponent(url1))
+                    fetch(url41),
+                    fetch(url1)
                 ]);
 
                 const data41 = await res41.json();
