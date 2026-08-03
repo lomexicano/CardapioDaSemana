@@ -408,6 +408,16 @@
                     card.innerHTML = html;
                     container.appendChild(card);
                 }
+                // Scroll automático para o dia atual no Mobile
+                if (window.innerWidth <= 768) {
+                    const cardHoje = document.querySelector('.current-day');
+                    if (cardHoje) {
+                        // Um pequeno atraso (100ms) garante que a página já desenhou os cards antes de rolar
+                        setTimeout(() => {
+                            cardHoje.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }, 100);
+                    }
+                }
 
             } catch (error) {
                 loading.innerHTML = `<span class="error">Erro ao carregar o cardápio. Detalhes no console.</span>`;
