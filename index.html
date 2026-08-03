@@ -44,7 +44,7 @@
         /* Botão de Tema */
         #theme-toggle {
             position: absolute;
-            top: 10px;
+            top: 5px;
             right: 15px;
             background: var(--btn-bg);
             color: var(--btn-color);
@@ -59,9 +59,9 @@
         /* Título Principal Compacto */
         h1 {
             text-align: center;
-            font-size: 1.2em; 
-            margin-top: 5px;  
-            margin-bottom: 10px; 
+            font-size: 1.0em; 
+            margin-top: 2px;  
+            margin-bottom: 5px; 
         }
 
         #loading {
@@ -119,8 +119,8 @@
         .meal-title {
             color: var(--meal-title-color);
             font-weight: bold;
-            margin-top: 10px;
-            font-size: 1em;
+            margin-top: 4px;
+            font-size: 0.9em;
             text-align: center; 
         }
 
@@ -130,7 +130,7 @@
             margin: 0;
         }
         li {
-            font-size: 0.85em;
+            font-size: 0.75em;
             padding: 5px 0;
             border-bottom: 1px solid var(--border-color);
         }
@@ -161,7 +161,7 @@
 <body>
 
     <button id="theme-toggle">☀️ Modo Claro</button>
-    <h1>Cardápio RU UFSM (Semana Atual)</h1>
+    <h1>Cardápio RU UFSM (semana atual)</h1>
     <div id="loading">Buscando cardápios nos servidores da UFSM...</div>
     <div class="container" id="menu-container"></div>
 
@@ -266,7 +266,7 @@
                         html += `</ul>`;
                     } else {
                         // Mantém a estrutura caso não haja almoço no dia, para não quebrar o layout
-                        html += `<div class="meal-title" style="color: #7f8c8d;">☀️ Almoço (Sem serviço)</div>`;
+                        html += `<div class="meal-title" style="color: #7f8c8d;">☀️ Almoço (sem serviço)</div>`;
                     }
                     html += `</div>`;
                     
@@ -277,7 +277,7 @@
                         meals.jantar.forEach(prato => html += `<li>${prato}</li>`);
                         html += `</ul>`;
                     } else {
-                        html += `<div class="meal-title" style="color: #7f8c8d;">🌙 Jantar (Sem serviço)</div>`;
+                        html += `<div class="meal-title" style="color: #7f8c8d;">🌙 Jantar (sem serviço)</div>`;
                     }
                     html += `</div>`;
 
